@@ -1,25 +1,50 @@
 {
   "name": "@dloizides/node-observability",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Metrics, structured logs and W3C trace context for plain node:http services, with the same metric and label names as the .NET Metrics.Client and Logging.Client packages.",
-  "keywords": ["observability", "prometheus", "metrics", "pino", "logging", "traceparent", "node"],
+  "keywords": [
+    "observability",
+    "prometheus",
+    "metrics",
+    "pino",
+    "logging",
+    "traceparent",
+    "node"
+  ],
   "author": "dloizides",
   "license": "MIT",
-  "repository": { "type": "git", "url": "https://github.com/openmindednewby/node-observability.git" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openmindednewby/node-observability.git"
+  },
   "homepage": "https://github.com/openmindednewby/node-observability#readme",
-  "bugs": { "url": "https://github.com/openmindednewby/node-observability/issues" },
+  "bugs": {
+    "url": "https://github.com/openmindednewby/node-observability/issues"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "require": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
-      "import": { "types": "./dist/index.d.mts", "default": "./dist/index.mjs" }
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      }
     }
   },
-  "files": ["dist", "README.md", "CHANGELOG.md"],
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "sideEffects": false,
-  "engines": { "node": ">=20.0.0" },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "build": "rimraf dist && tsup",
     "test": "jest",
