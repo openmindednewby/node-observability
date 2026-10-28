@@ -1,0 +1,51 @@
+# @dloizides/node-observability
+
+Metrics, JSON logs and W3C trace context for small Node services built on plain `node:http`.
+It writes the same Prometheus series as the .NET `Metrics.Client` package, so one dashboard and one set of alerts covers both stacks.
+
+## Quick start
+
+```js
+import { createServer } from 'node:http';
+import { createHttpMetrics, createLogger, instrument } from '@dloizides/node-observability';
+
+const app = 'surge-api';
+const logger = createLogger({ app });
+const metrics = createHttpMetrics({ app });
+
+createServer(
+  instrument(handler, {
+    routes: ['/api/runs', '/api/items/:id'],
+    skipPaths: ['/api/health'],
+    logger,
+    metrics,
+    metricsToken: process.env.METRICS_TOKEN,
+  }),
+).listen(3002);
+```
+
+## What it records
+
+| Series | Labels | Same as Metrics.Client |
+|---|---|---|
+| `http_requests_total` | `app`, `method`, `http_route`, `status_code` | yes |
+| `http_request_duration_seconds` (buckets 5 ms .. 10 s) | `app`, `method`, `http_route`, `status_code` | yes |
+| `http_unmatched_requests_total` | `app`, `method` | yes |
+| `http_requests_in_flight` | `app` | yes |
+| `process_*`, `nodejs_*` | none | the Node equivalent of prometheus-net's defaults |
+
+- `http_route` is the matching template from `routes`; any other path is counted as the literal `unmatched`, so a URL never becomes a label.
+- `/metrics`, `/health` and every `skipPaths` entry are neither counted nor logged.
+- `metricsToken` set: `GET /metrics` needs `Authorization: Bearer <token>`.
+
+## Logs and traces
+
+- One JSON line per request: `app`, `level`, `time`, `method`, `route`, `status`, `duration_ms`, `TraceId`, `SpanId` (the property names `Logging.Client` uses).
+- An incoming `traceparent` header is continued with a new span id; without one a new sampled trace starts. The response carries `traceparent` back.
+- `currentTrace()` and `outgoingTraceparent()` give the trace to code that logs or calls another service while a request is in flight.
+- A handler that throws or rejects is logged at `error` and answered with a 500 when nothing was sent yet.
+
+## API
+
+`instrument(handler, options)`, `createHttpMetrics({ app, register?, defaultMetrics? })`, `createLogger({ app, level?, destination? })`,
+`currentTrace()`, `outgoingTraceparent()`, `runWithTrace(ctx, fn)`, `parseTraceparent()`, `startTrace()`, `formatTraceparent()`, `matchRoute(templates)`, `normalisePath(url)`.
