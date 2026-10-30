@@ -1,6 +1,6 @@
 {
   "name": "@dloizides/node-observability",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Metrics, structured logs and W3C trace context for plain node:http services, with the same metric and label names as the .NET Metrics.Client and Logging.Client packages.",
   "keywords": [
     "observability",
