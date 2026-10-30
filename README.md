@@ -37,15 +37,17 @@ createServer(
 - `http_route` is the matching template from `routes`; any other path is counted as the literal `unmatched`, so a URL never becomes a label.
 - `/metrics`, `/health` and every `skipPaths` entry are neither counted nor logged.
 - `metricsToken` set: `GET /metrics` needs `Authorization: Bearer <token>`.
+- Own metrics go through `createCounter` / `createGauge` / `createHistogram` / `createSummary`: they throw at registration on a banned label (`user_id`, `userid`, `user`, `email`, `request_id`, `trace_id`, `span_id`, `correlation_id`, `path`, `url`, `raw_path`, `query`, `ip`, `client_ip`, `user_agent`, `message`, `error_message`), on `tenant` on an `http_*` metric, and on more than 8 labels. Wrap a tenant value in `createBoundedLabel()` (first 100 values, then `other`).
 
 ## Logs and traces
 
-- One JSON line per request: `app`, `level`, `time`, `method`, `route`, `status`, `duration_ms`, `TraceId`, `SpanId` (the property names `Logging.Client` uses).
-- An incoming `traceparent` header is continued with a new span id; without one a new sampled trace starts. The response carries `traceparent` back.
+- One JSON line per request: `app`, `level`, `time`, `method`, `route`, `status`, `duration_ms`, `trace_id`, `span_id`, plus `TraceId` / `SpanId` for older queries, and `correlation_id` when the caller sent `X-Correlation-Id`.
+- An incoming `traceparent` header is continued with a new span id; without one a new sampled trace starts. The response carries `traceparent` and `X-Trace-Id` back; a 500 body carries `traceId`.
 - `currentTrace()` and `outgoingTraceparent()` give the trace to code that logs or calls another service while a request is in flight.
 - A handler that throws or rejects is logged at `error` and answered with a 500 when nothing was sent yet.
 
 ## API
 
 `instrument(handler, options)`, `createHttpMetrics({ app, register?, defaultMetrics? })`, `createLogger({ app, level?, destination? })`,
-`currentTrace()`, `outgoingTraceparent()`, `runWithTrace(ctx, fn)`, `parseTraceparent()`, `startTrace()`, `formatTraceparent()`, `matchRoute(templates)`, `normalisePath(url)`.
+`currentTrace()`, `outgoingTraceparent()`, `runWithTrace(ctx, fn)`, `parseTraceparent()`, `startTrace()`, `formatTraceparent()`, `matchRoute(templates)`, `normalisePath(url)`,
+`createCounter()`, `createGauge()`, `createHistogram()`, `createSummary()`, `assertMetricLabels(name, labelNames)`, `createBoundedLabel(limit?)`.

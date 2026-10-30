@@ -1,4 +1,5 @@
-import { collectDefaultMetrics, Counter, Gauge, Histogram, Registry } from 'prom-client';
+import { collectDefaultMetrics, Registry } from 'prom-client';
+import { createCounter, createGauge, createHistogram } from './guardedMetrics';
 import { UNMATCHED_ROUTE } from './route';
 
 /** Options for {@link createHttpMetrics}. */
@@ -32,10 +33,10 @@ export function createHttpMetrics(options: HttpMetricsOptions): HttpMetrics {
   const registers = [register];
   if (options.defaultMetrics !== false) collectDefaultMetrics({ register });
 
-  const total = new Counter({ name: 'http_requests_total', help: 'Total number of HTTP requests processed.', labelNames: ROUTE_LABELS, registers });
-  const unmatched = new Counter({ name: 'http_unmatched_requests_total', help: 'Total number of HTTP requests that did not match any route.', labelNames: ['app', 'method'], registers });
-  const duration = new Histogram({ name: 'http_request_duration_seconds', help: 'Duration of HTTP requests in seconds.', labelNames: ROUTE_LABELS, buckets: DURATION_BUCKETS, registers });
-  const inFlight = new Gauge({ name: 'http_requests_in_flight', help: 'Number of HTTP requests currently being processed.', labelNames: ['app'], registers });
+  const total = createCounter({ name: 'http_requests_total', help: 'Total number of HTTP requests processed.', labelNames: ROUTE_LABELS, registers });
+  const unmatched = createCounter({ name: 'http_unmatched_requests_total', help: 'Total number of HTTP requests that did not match any route.', labelNames: ['app', 'method'], registers });
+  const duration = createHistogram({ name: 'http_request_duration_seconds', help: 'Duration of HTTP requests in seconds.', labelNames: ROUTE_LABELS, buckets: DURATION_BUCKETS, registers });
+  const inFlight = createGauge({ name: 'http_requests_in_flight', help: 'Number of HTTP requests currently being processed.', labelNames: ['app'], registers });
   inFlight.labels(options.app).set(0);
 
   return {

@@ -8,7 +8,7 @@ export interface LoggerOptions {
   destination?: DestinationStream;
 }
 
-/** A JSON logger that stamps `app` and the current `TraceId` / `SpanId` (Logging.Client names) on every line. */
+/** A JSON logger that stamps `app`, `trace_id` / `span_id` (and the older `TraceId` / `SpanId`) and `correlation_id` on every line. */
 export function createLogger(options: LoggerOptions): Logger {
   const config: PinoOptions = {
     level: options.level ?? process.env.LOG_LEVEL ?? 'info',
@@ -17,7 +17,9 @@ export function createLogger(options: LoggerOptions): Logger {
     formatters: { level: (label) => ({ level: label }) },
     mixin: () => {
       const ctx = currentTrace();
-      return ctx ? { TraceId: ctx.traceId, SpanId: ctx.spanId } : {};
+      if (!ctx) return {};
+      const ids = { trace_id: ctx.traceId, span_id: ctx.spanId, TraceId: ctx.traceId, SpanId: ctx.spanId };
+      return ctx.correlationId === undefined ? ids : { ...ids, correlation_id: ctx.correlationId };
     },
   };
   return options.destination ? pino(config, options.destination) : pino(config);

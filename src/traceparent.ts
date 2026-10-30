@@ -12,6 +12,7 @@ export interface TraceContext {
   traceId: string;
   spanId: string;
   flags: string;
+  correlationId?: string;
 }
 
 const TRACEPARENT = /^([0-9a-f]{2})-([0-9a-f]{32})-([0-9a-f]{16})-([0-9a-f]{2})$/;

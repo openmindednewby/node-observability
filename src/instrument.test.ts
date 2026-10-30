@@ -67,6 +67,42 @@ describe('instrument', () => {
     expect(line).toMatchObject({ app: 'demo-api', TraceId: TRACE, SpanId: seen.spanId, method: 'GET', route: '/api/items/:id', status: 201 });
   });
 
+  it('with an inbound request, returns the trace id in X-Trace-Id and logs trace_id and span_id', async () => {
+    h = await start(ok);
+
+    const res = await fetch(`${h.base}/api/items/1`, { headers: { traceparent: `00-${TRACE}-${PARENT}-01` } });
+
+    const seen = (await res.json()) as { spanId: string };
+    expect(res.headers.get('x-trace-id')).toBe(TRACE);
+    expect(JSON.parse(h.lines[0] ?? '{}')).toMatchObject({ trace_id: TRACE, span_id: seen.spanId });
+  });
+
+  it('with an inbound X-Correlation-Id, logs it as correlation_id', async () => {
+    h = await start(ok);
+
+    await fetch(`${h.base}/api/items/1`, { headers: { 'x-correlation-id': 'partner-42' } });
+
+    expect(JSON.parse(h.lines[0] ?? '{}')).toMatchObject({ correlation_id: 'partner-42' });
+  });
+
+  it('with no inbound X-Correlation-Id, logs no correlation_id', async () => {
+    h = await start(ok);
+
+    await fetch(`${h.base}/api/items/1`);
+
+    expect(JSON.parse(h.lines[0] ?? '{}')).not.toHaveProperty('correlation_id');
+  });
+
+  it('with a handler that throws, returns the trace id in the error body', async () => {
+    h = await start(() => {
+      throw new Error('boom');
+    });
+
+    const res = await fetch(`${h.base}/api/items/1`, { headers: { traceparent: `00-${TRACE}-${PARENT}-01` } });
+
+    expect(await res.json()).toMatchObject({ traceId: TRACE });
+  });
+
   it('refuses /metrics without the scrape token when one is set', async () => {
     h = await start(ok, SCRAPE_KEY);
     expect((await fetch(`${h.base}/metrics`)).status).toBe(401);
