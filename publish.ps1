@@ -224,7 +224,7 @@ catch {
   # VALID JSON -- so nothing complains -- but it is no longer the file npm wrote.
   # That silently corrupted 10 package.json files (2 got committed).
   $raw = [System.IO.File]::ReadAllText($packageJsonPath)
-  $rolledBack = [regex]::Replace($raw, '("version"\s*:\s*")[^"]*(")', "`${1}$currentVersion`${2}", 1)
+  $rolledBack = [regex]::new('(?m)^((?:  |\t)"version"\s*:\s*")[^"]*(")').Replace($raw, "`${1}$currentVersion`${2}", 1)
   $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
   [System.IO.File]::WriteAllText($packageJsonPath, $rolledBack, $utf8NoBom)
   throw
