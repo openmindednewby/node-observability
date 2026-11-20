@@ -46,8 +46,17 @@ createServer(
 - `currentTrace()` and `outgoingTraceparent()` give the trace to code that logs or calls another service while a request is in flight.
 - A handler that throws or rejects is logged at `error` and answered with a 500 when nothing was sent yet.
 
+## Management port
+
+```js
+const server = createServer(hideManagementPaths(instrument(handler, options)));
+startManagementServer({ metrics, health: { ready: () => db.open } });
+```
+
+`/metrics`, `/health/live` and `/health/ready` are served on port 8081 (`port` overrides) and answer 404 on the public port.
+
 ## API
 
-`instrument(handler, options)`, `createHttpMetrics({ app, register?, defaultMetrics? })`, `createLogger({ app, level?, destination? })`,
+`instrument(handler, options)`, `startManagementServer({ metrics, port?, host?, health? })`, `hideManagementPaths(handler)`, `createHttpMetrics({ app, register?, defaultMetrics? })`, `createLogger({ app, level?, destination? })`,
 `currentTrace()`, `outgoingTraceparent()`, `runWithTrace(ctx, fn)`, `parseTraceparent()`, `startTrace()`, `formatTraceparent()`, `matchRoute(templates)`, `normalisePath(url)`,
 `createCounter()`, `createGauge()`, `createHistogram()`, `createSummary()`, `assertMetricLabels(name, labelNames)`, `createBoundedLabel(limit?)`.

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0
+
+- `startManagementServer({ metrics, port = 8081, host?, health? })`: a second `node:http` listener serving `/metrics`, `/health/live` and `/health/ready` only; every other path or method is 404. `health.live` / `health.ready` return a boolean (or throw) and map to 200 / 503.
+- `hideManagementPaths(handler)`: wraps the public listener (outside `instrument`) so `/metrics`, `/health/live` and `/health/ready` answer 404 there. Without it nothing changes.
+
 ## 0.2.0
 
 - Banned-label guard (OBS-7 "Every app and service ships the seven observability pillars", observability-pillars.md section 7): `createCounter` / `createGauge` / `createHistogram` / `createSummary` and `assertMetricLabels` throw at registration on a personal or unbounded label (`user_id`, `email`, `trace_id`, `path`, `ip`, `user_agent`, `message`, ...), on `tenant` on any `http_*` metric, and on more than 8 labels. The HTTP metrics are created through it.

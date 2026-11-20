@@ -7,3 +7,4 @@ export { createLogger, type LoggerOptions } from './logger';
 export { currentTrace, outgoingTraceparent, runWithTrace } from './context';
 export { formatTraceparent, parseTraceparent, startTrace, type TraceContext, type TraceparentHeader } from './traceparent';
 export { matchRoute, normalisePath, UNMATCHED_ROUTE } from './route';
+export { DEFAULT_MANAGEMENT_PORT, hideManagementPaths, MANAGEMENT_PATHS, startManagementServer, type HealthCheck, type ManagementServerOptions } from './management';
